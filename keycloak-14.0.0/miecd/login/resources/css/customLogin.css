@@ -65,6 +65,7 @@ input.form-control {
 .logo img {
   height: 100%;
   width: auto;
+  margin: 0 10px;
 }
 
 .form-area {
