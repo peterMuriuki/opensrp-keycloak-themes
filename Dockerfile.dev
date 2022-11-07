@@ -1,0 +1,5 @@
+FROM quay.io/keycloak/keycloak:18.0.0-legacy
+
+WORKDIR /opt/jboss/keycloak
+
+COPY scripts/disable-theme-cache.cli ../startup-scripts/disable-theme-cache.cli

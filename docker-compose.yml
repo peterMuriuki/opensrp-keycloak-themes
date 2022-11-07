@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  keycloak:
+    image: keycloak
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    volumes:
+      - ./themes/miecd:/opt/jboss/keycloak/themes/miecd
+      - ./themes/default:/opt/jboss/keycloak/themes/default
+      - ./themes/fhir:/opt/jboss/keycloak/themes/fhir
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+
