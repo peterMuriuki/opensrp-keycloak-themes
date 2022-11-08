@@ -19,6 +19,8 @@ All theme types, except welcome, are configured through the Admin Console.
 
 The welcome theme can be configured using the `spi-theme-welcome-theme` option.
 
+See contributions guide [here](./docs/contributing.md)
+
 
 ### Test Using docker
 
