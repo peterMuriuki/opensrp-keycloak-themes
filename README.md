@@ -30,13 +30,11 @@ docker compose up
 
 Access a running keycloak application at https://localhost:8080
 
-This binds the themes folder to the container's keycloak themes folder. Themes caching is disabled so feel free to test out changes to the themes as you make them.
+This binds the themes folder to the container's keycloak themes folder. Themes caching is disabled so feel free to test out changes to the themes in real time.
 
-**Changing themes**
+**Changing themes on keycloak**
 
 1. Go to `http://localhost:8080/auth/admin/master/console/#/realms/master/theme-settings`
-2. There is a form with the different types of themes that can be applied.
-
 
 ## Further Readings.
 
