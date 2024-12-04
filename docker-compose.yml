@@ -11,7 +11,7 @@ services:
       - "--http-relative-path /auth"
       - "--spi-theme-static-max-age=-1 --spi-theme-cache-themes=false --spi-theme-cache-templates=false"
     volumes:
-      - ./keycloak-theme.jar:/opt/keycloak/providers/keycloak-theme.jar
+      - ./dist_keycloak/keycloak-theme-for-kc-22-and-above.jar:/opt/keycloak/providers/keycloak-theme.jar
     ports:
       - "8080:8080"
       - "8443:8443"

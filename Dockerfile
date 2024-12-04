@@ -1,17 +1,22 @@
 FROM node:22-alpine AS build
 
-RUN apt-get update \
-    && apt-get install -y maven
+RUN apk update && apk add  maven
 
-WORKDIR /srv
-ADD package.json .
-ADD yarn.lock .
+WORKDIR /themes
 
-RUN yarn
-ADD . .
+RUN corepack enable
+
+# Copy dependency files first
+COPY package.json yarn.lock .yarnrc.yml ./
+
+COPY . .
+
+RUN yarn install
+
 RUN yarn build-keycloak-theme
 
 FROM node:22-alpine
-COPY --from=build /srv/dist_keycloak/ /srv/
+
+COPY --from=build /themes/dist_keycloak/ /themes/
 
 CMD ["sh"]
