@@ -1,0 +1,11 @@
+**/*.db
+**/.env
+**/.git*
+**/.waypoint
+**/build
+node_modules
+dist_keycloak
+dist
+Dockerfile
+README.md
+.dockerignore
