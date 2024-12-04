@@ -2,6 +2,7 @@
 
 The vanilla (manually edited ftl files) themes can be found in the branch [vanilla-themes](https://github.com/opensrp/opensrp-keycloak-themes/tree/vanilla-themes)
 
+
 This repository contains a custom Keycloak theme built using [Keycloakify](https://github.com/keycloakify/keycloakify) and the [Keycloakify starter repository](https://github.com/keycloakify/keycloakify-starter-webpack). The theme is designed for use with Keycloak and provides custom styling and layouts for the following authentications pages:
 - Login
 
