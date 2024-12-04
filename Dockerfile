@@ -15,7 +15,7 @@ RUN yarn install
 
 RUN yarn build-keycloak-theme
 
-FROM node:22-alpine
+FROM node:16-alpine
 
 COPY --from=build /themes/dist_keycloak/ /themes/
 

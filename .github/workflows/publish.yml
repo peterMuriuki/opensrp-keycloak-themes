@@ -78,30 +78,45 @@ jobs:
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
       
-      - name: Scan Docker Image with Docker Scout and Save Report
-        id: scout
-        run: |
-          # Save the Docker Scout report as JSON and Markdown
-          docker scout cves ${{ steps.meta.outputs.tags }} --output json > scout-report.json
-          docker scout cves ${{ steps.meta.outputs.tags }} --output markdown > scout-report.md
-
-      - name: Check Docker Scout Scan Result
-        id: check-scout-result
-        run: |
-          # Check if any vulnerabilities are reported in the JSON output
-          if grep -q '"severity":' scout-report.json; then
-            echo "Vulnerabilities found in Docker Scout report."
-            echo "found_vulnerabilities=true" >> $GITHUB_ENV
-          else
-            echo "No vulnerabilities found."
-            echo "found_vulnerabilities=false" >> $GITHUB_ENV
-
-      - name: Create GitHub Issue for Vulnerabilities
-        if: env.found_vulnerabilities == 'true'
-        uses: peter-evans/create-issue-from-file@v4
+      - name: Analyze for critical and high CVEs
+        id: docker-scout-cves
+        uses: docker/scout-action@v1
         with:
-          title: "Docker Scout Vulnerability Report for Image ${{ steps.meta.outputs.tags }}"
-          content-filepath: scout-report.md
-          labels: |
-            "Security Support"
-            "Bug Report"
+          command: cves
+          image: ${{ steps.meta.outputs.tags }}
+          sarif-file: sarif.output.json
+          summary: true
+
+      - name: Upload SARIF result
+        id: upload-sarif
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: sarif.output.json
+      
+      # - name: Scan Docker Image with Docker Scout and Save Report
+      #   id: scout
+      #   run: |
+      #     # Save the Docker Scout report as JSON and Markdown
+      #     docker scout cves ${{ steps.meta.outputs.tags }} --output json > scout-report.json
+      #     docker scout cves ${{ steps.meta.outputs.tags }} --output markdown > scout-report.md
+
+      # - name: Check Docker Scout Scan Result
+      #   id: check-scout-result
+      #   run: |
+      #     # Check if any vulnerabilities are reported in the JSON output
+      #     if grep -q '"severity":' scout-report.json; then
+      #       echo "Vulnerabilities found in Docker Scout report."
+      #       echo "found_vulnerabilities=true" >> $GITHUB_ENV
+      #     else
+      #       echo "No vulnerabilities found."
+      #       echo "found_vulnerabilities=false" >> $GITHUB_ENV
+
+      # - name: Create GitHub Issue for Vulnerabilities
+      #   if: env.found_vulnerabilities == 'true'
+      #   uses: peter-evans/create-issue-from-file@v4
+      #   with:
+      #     title: "Docker Scout Vulnerability Report for Image ${{ steps.meta.outputs.tags }}"
+      #     content-filepath: scout-report.md
+      #     labels: |
+      #       "Security Support"
+      #       "Bug Report"
