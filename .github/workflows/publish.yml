@@ -1,0 +1,107 @@
+name: Publish opensrp 2 themes images
+
+on:
+  push:
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  pull_request:
+    # Run Tests when changes are made to the Docker file
+    paths:
+      - 'Dockerfile'
+
+  workflow_dispatch:
+    inputs:
+      customTag:
+        description: "Includes the specified tag to docker image tags"
+        required: true
+
+jobs:
+  # Run image build test
+  test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Build tests
+        run: docker build . --file Dockerfile
+
+  push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            opensrp/keycloak-themes
+          tags: |
+            type=ref,event=branch,key=main,tag=latest
+            type=ref,event=branch,pattern=release/*,group=1
+            type=ref,event=tag
+            type=sha
+            # Add a custom tag if provided through workflow_dispatch input
+            type=raw,value=${{ github.event.inputs.customTag }}
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push to Docker Image Repositories
+        uses: docker/build-push-action@v6
+        id: docker_build
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=${{ github.workflow }}
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+      
+      - name: Scan Docker Image with Docker Scout and Save Report
+        id: scout
+        run: |
+          # Save the Docker Scout report as JSON and Markdown
+          docker scout cves ${{ steps.meta.outputs.tags }} --output json > scout-report.json
+          docker scout cves ${{ steps.meta.outputs.tags }} --output markdown > scout-report.md
+
+      - name: Check Docker Scout Scan Result
+        id: check-scout-result
+        run: |
+          # Check if any vulnerabilities are reported in the JSON output
+          if grep -q '"severity":' scout-report.json; then
+            echo "Vulnerabilities found in Docker Scout report."
+            echo "found_vulnerabilities=true" >> $GITHUB_ENV
+          else
+            echo "No vulnerabilities found."
+            echo "found_vulnerabilities=false" >> $GITHUB_ENV
+
+      - name: Create GitHub Issue for Vulnerabilities
+        if: env.found_vulnerabilities == 'true'
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: "Docker Scout Vulnerability Report for Image ${{ steps.meta.outputs.tags }}"
+          content-filepath: scout-report.md
+          labels: |
+            "Security Support"
+            "Bug Report"

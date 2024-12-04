@@ -1,5 +1,0 @@
-FROM quay.io/keycloak/keycloak:22.0.5
-
-WORKDIR /opt/jboss/keycloak
-
-COPY scripts/disable-theme-cache.cli ../startup-scripts/disable-theme-cache.cli

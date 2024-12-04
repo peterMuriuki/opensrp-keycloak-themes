@@ -1,20 +1,20 @@
 version: "3.8"
 services:
   keycloak:
-    image: keycloak
+    image: quay.io/keycloak/keycloak:25.0.4
+    container_name: keycloak
     build:
       context: .
       dockerfile: ./Dockerfile.dev
     command:
       - "start-dev"
       - "--http-relative-path /auth"
+      - "--spi-theme-static-max-age=-1 --spi-theme-cache-themes=false --spi-theme-cache-templates=false"
     volumes:
-      - ./themes/miecd:/opt/jboss/keycloak/themes/miecd
-      - ./themes/default:/opt/jboss/keycloak/themes/default
-      - ./themes/fhir:/opt/jboss/keycloak/themes/fhir
+      - ./keycloak-theme.jar:/opt/keycloak/providers/keycloak-theme.jar
     ports:
       - "8080:8080"
+      - "8443:8443"
     environment:
       - "KEYCLOAK_ADMIN=admin"
       - "KEYCLOAK_ADMIN_PASSWORD=admin"
-
